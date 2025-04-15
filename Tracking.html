@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Blind GPS Tracker with Animated Marker</title>
+  <style>
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+    #btn {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      font-size: 16px;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <button id="btn">Retrace Steps</button>
+  <div id="map"></div>
+
+  <script>
+    let map, marker, walkMarker, directionsService, directionsRenderer;
+    let reversed = false;
+    let animationInterval;
+
+    const startPoint = { lat: 42.672000, lng: -83.215000 };
+    const endPoint = { lat: 42.673564, lng: -83.216059 };
+
+    function speak(text) {
+      const utter = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utter);
+    }
+
+    function animateAlongPath(coords) {
+      let i = 0;
+      if (animationInterval) clearInterval(animationInterval);
+
+      animationInterval = setInterval(() => {
+        if (i >= coords.length) {
+          speak("You have reached your destination.");
+          clearInterval(animationInterval);
+          return;
+        }
+        walkMarker.setPosition(coords[i]);
+        map.setCenter(coords[i]);
+        i++;
+      }, 1000);
+    }
+
+    function drawRoute(origin, destination) {
+      directionsService.route({
+        origin: origin,
+        destination: destination,
+        travelMode: google.maps.TravelMode.WALKING
+      }, function(response, status) {
+        if (status === "OK") {
+          directionsRenderer.setDirections(response);
+
+          const steps = response.routes[0].legs[0].steps;
+          const coords = [];
+
+          steps.forEach((step, index) => {
+            coords.push(...step.path); // Add all coordinates from the step
+
+            const rawInstruction = step.instructions.replace(/<[^>]*>/g, '');
+            const instruction = rawInstruction.toLowerCase();
+            const distanceFeet = Math.round(step.distance.value * 3.28084);
+
+            let message = "";
+            if (instruction.includes("head") || instruction.includes("continue") || instruction.includes("go straight")) {
+              message = `Step ${index + 1}: Go straight for ${distanceFeet} feet.`;
+            } else {
+              message = `Step ${index + 1}: ${rawInstruction}`;
+            }
+
+            setTimeout(() => {
+              speak(message);
+            }, index * 3000);
+          });
+
+          animateAlongPath(coords);
+        } else {
+          alert("Directions request failed: " + status);
+        }
+      });
+    }
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 18,
+        center: startPoint,
+      });
+
+      directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer({
+        map: map,
+        suppressMarkers: false
+      });
+
+      // Initial animated marker
+      walkMarker = new google.maps.Marker({
+        map: map,
+        position: startPoint,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: "#00F",
+          fillOpacity: 1,
+          strokeWeight: 2,
+        }
+      });
+
+      // Draw initial route
+      drawRoute(startPoint, endPoint);
+
+      document.getElementById("btn").onclick = () => {
+        if (!reversed) {
+          drawRoute(endPoint, startPoint);
+          reversed = true;
+        } else {
+          drawRoute(startPoint, endPoint);
+          reversed = false;
+        }
+      };
+    }
+  </script>
+
+  <!-- Load the Google Maps JS API -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD6wPLoxMXM_ToFAdhGN7WbMj6QGSH8wWI&callback=initMap">
+  </script>
+</body>
+</html>
