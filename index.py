@@ -31,7 +31,7 @@ class GuideDogApp(QWidget):
         # Create a horizontal layout for the title and image
         horizontal_layout = QHBoxLayout()
         # spacer to the left
-        horizontal_layout.addSpacerItem(QSpacerItem(180, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))    
+        horizontal_layout.addSpacerItem(QSpacerItem(300, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))    
 
         # Add a title label
         title = QLabel("Guide Dog")
@@ -40,7 +40,7 @@ class GuideDogApp(QWidget):
         horizontal_layout.addWidget(title)  # Align title to the left
 
         # spacer between title and image
-        horizontal_layout.addSpacerItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Minimum))
+        horizontal_layout.addSpacerItem(QSpacerItem(1, 1, QSizePolicy.Minimum, QSizePolicy.Minimum))
 
 
         # Add an image
@@ -57,36 +57,21 @@ class GuideDogApp(QWidget):
         horizontal_layout.addWidget(image)  # Align image to the right
 
         # Add a spacer to the right
-        horizontal_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        horizontal_layout.addSpacerItem(QSpacerItem(100, 100, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
         # Add the horizontal layout to the main vertical layout
         layout.addLayout(horizontal_layout)
 
-        # self.speak("Welcome to Guide Dog")
+        # Says the welcome message
 
         self.start_timer()
-
-        # Add the rest of the widgets (e.g., buttons) to the vertical layout
-
-        # Add a button to launch the weather app
-        weather_button = QPushButton("Open Weather")
-        weather_button.setStyleSheet("""
-            padding: 10px 20px;
-            font-size: 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        """)
-        weather_button.clicked.connect(self.launch_weather)
-        layout.addWidget(weather_button)
 
         # Set the layout for the main window
         self.setLayout(layout)
 
     def launch_weather(self):
         try:
-            self.close
+            self.close()
             dir_name = os.path.dirname(os.path.abspath(__file__))
             weather_path = os.path.join(dir_name, 'Weather.py')
             # Launch the Weather.py script
@@ -100,7 +85,7 @@ class GuideDogApp(QWidget):
         startup_timer.start()
 
         # Timer to launch the weather app
-        timer = threading.Timer(4, self.launch_weather)
+        timer = threading.Timer(6, self.launch_weather)
         timer.start()
 
     def speak(self, text):  
